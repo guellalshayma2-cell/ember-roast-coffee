@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ember & Roast — Coffee Shop</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- Header -->
+  <header class="site-header">
+    <div class="brand">
+      <span class="brand-logo" aria-hidden="true">☕</span>
+      <div>
+        <h1 class="brand-name">Ember &amp; Roast</h1>
+        <p class="brand-tag">Hand-crafted coffee, made with care</p>
+      </div>
+    </div>
+    <nav class="site-nav" aria-label="Primary">
+      <a href="#menu">Menu</a>
+      <a href="#order">Your Order</a>
+      <a href="#checkout">Checkout</a>
+      <a href="#history">History<span class="nav-badge" id="nav-badge" hidden>0</span></a>
+    </nav>
+  </header>
+
+  <main class="layout">
+    <!-- Menu Section -->
+    <section class="menu" id="menu" aria-labelledby="menu-title">
+      <div class="section-head">
+        <h2 id="menu-title">Our Drinks</h2>
+        <p class="muted">Tap “Add to Order” to start your basket.</p>
+      </div>
+
+      <div class="menu-grid" id="menu-grid">
+        <!-- Drink cards rendered by app.js -->
+      </div>
+    </section>
+
+    <!-- Order Summary + Form -->
+    <aside class="sidebar">
+        <section class="order" id="order" aria-labelledby="order-title">
+          <div class="section-head">
+            <h2 id="order-title">Your Order</h2>
+            <p class="muted">Review before checkout.</p>
+          </div>
+
+          <ul class="order-list" id="order-list" aria-live="polite">
+            <li class="order-empty">No items yet — pick something delicious.</li>
+          </ul>
+
+          <div class="order-total" aria-live="polite">
+            <span>Total</span>
+            <strong id="order-total">$0.00</strong>
+          </div>
+        </section>
+
+        <section class="checkout" id="checkout" aria-labelledby="checkout-title">
+          <div class="section-head">
+            <h2 id="checkout-title">Checkout</h2>
+            <p class="muted">We’ll have it ready in 10–15 min.</p>
+          </div>
+
+          <form class="checkout-form" id="checkout-form" novalidate>
+            <label class="field">
+              <span>Name</span>
+              <input type="text" id="cust-name" name="name" placeholder="Jane Cooper" required />
+            </label>
+
+            <label class="field">
+              <span>Phone</span>
+              <input type="tel" id="cust-phone" name="phone" placeholder="(555) 123-4567" required />
+            </label>
+
+            <label class="field">
+              <span>Notes</span>
+              <textarea id="cust-notes" name="notes" rows="3" placeholder="Extra hot, oat milk, less sugar..."></textarea>
+            </label>
+
+            <button type="submit" class="btn-primary">Place Order</button>
+            <p class="form-feedback" id="form-feedback" role="status"></p>
+          </form>
+        </section>
+    </aside>
+  </main>
+
+  <!-- Order History -->
+  <section class="history" id="history" aria-labelledby="history-title">
+    <div class="history-shell">
+      <div class="section-head history-head">
+        <div>
+          <h2 id="history-title">Order History</h2>
+          <p class="muted">All orders placed this session, saved locally.</p>
+        </div>
+        <button class="btn-ghost" id="clear-history" type="button">Clear History</button>
+      </div>
+
+      <div class="history-grid" id="history-grid">
+        <!-- History cards rendered by app.js -->
+      </div>
+
+      <p class="history-empty" id="history-empty">No orders yet — your history will show up after your first order.</p>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <p>© 2026 Ember &amp; Roast — Brewed with love.</p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

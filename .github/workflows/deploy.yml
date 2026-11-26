@@ -1,0 +1,45 @@
+# =========================================================
+# Deploy Workflow — Ember & Roast Coffee Shop
+# Publishes the static site to GitHub Pages on every push
+# to main (after CI-quality checks pass).
+# =========================================================
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: # allow manual runs from the Actions tab
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Only one deployment at a time; don't cancel in-progress runs.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Build & Deploy
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload site as artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: . # static site lives at the repo root
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
