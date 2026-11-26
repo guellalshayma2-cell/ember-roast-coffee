@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Orders Dashboard</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: #f4f6f9;
+      color: #1f2933;
+      padding: 32px;
+    }
+    h1 { margin-bottom: 4px; }
+    .subtitle { color: #616e7c; margin-bottom: 28px; }
+    .badge {
+      display: inline-block; font-size: 12px; color: #256029;
+      background: #e3f4e8; border-radius: 12px; padding: 3px 10px;
+      margin-left: 8px; vertical-align: middle;
+    }
+    .card {
+      background: #fff; border-radius: 10px; padding: 20px 24px;
+      box-shadow: 0 1px 3px rgba(0,0,0,.1); margin-bottom: 28px;
+      overflow-x: auto;
+    }
+    .card h2 { font-size: 18px; margin-bottom: 14px; }
+    table { border-collapse: collapse; width: 100%; font-size: 14px; }
+    th, td { padding: 9px 12px; text-align: left; border-bottom: 1px solid #e4e7eb; }
+    th { background: #f0f4f8; color: #3e4c59; font-weight: 600; }
+    tr:hover td { background: #f8fafc; }
+    td.num { text-align: right; font-variant-numeric: tabular-nums; }
+    th.num { text-align: right; }
+    .cny { color: #b45309; font-weight: 600; }
+  </style>
+</head>
+<body>
+  <h1>Orders Dashboard <span class="badge" id="refresh-badge">auto-refresh: on</span></h1>
+  <p class="subtitle">Data served live from SQLite — the page refreshes itself when the database changes.</p>
+
+  <div class="card">
+    <h2>Merged Orders</h2>
+    <table id="orders-table">
+      <thead>
+        <tr>
+          <th>Order ID</th><th>Customer</th><th>Region</th>
+          <th class="num">Amount</th><th>Currency</th>
+          <th class="num">Amount (CNY)</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>Average Amount (CNY) per Region</h2>
+    <table id="summary-table">
+      <thead>
+        <tr><th>Region</th><th class="num">Avg Amount (CNY)</th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <script>
+    function renderRows(tbody, rows, cells) {
+      tbody.innerHTML = "";
+      rows.forEach(row => {
+        const tr = document.createElement("tr");
+        cells.forEach(c => {
+          const td = document.createElement("td");
+          if (c.num) td.className = "num";
+          if (c.cls) td.className += " " + c.cls;
+          td.textContent = c.val(row);
+          tr.appendChild(td);
+        });
+        tbody.appendChild(tr);
+      });
+    }
+
+    function load() {
+      fetch("/api/data")
+        .then(r => r.json())
+        .then(d => {
+          renderRows(
+            document.querySelector("#orders-table tbody"),
+            d.orders,
+            [
+              { val: r => r.order_id },
+              { val: r => r.customer_name },
+              { val: r => r.region },
+              { val: r => r.amount, num: true },
+              { val: r => r.currency },
+              { val: r => r.amount_cny.toFixed(2), num: true, cls: "cny" }
+            ]
+          );
+          renderRows(
+            document.querySelector("#summary-table tbody"),
+            d.summary,
+            [{ val: r => r.region }, { val: r => r.avg_amount_cny.toFixed(2), num: true, cls: "cny" }]
+          );
+        })
+        .catch(() => {
+          document.getElementById("refresh-badge").textContent = "auto-refresh: error";
+        });
+    }
+
+    // Initial render + poll every 5 seconds so the page updates
+    // automatically whenever the database changes.
+    load();
+    setInterval(load, 5000);
+  </script>
+</body>
+</html>
