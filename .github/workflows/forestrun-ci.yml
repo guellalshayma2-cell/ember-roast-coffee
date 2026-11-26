@@ -1,0 +1,57 @@
+# CI for the forestrun Python project (data analysis pipeline + flask demo)
+# Runs syntax checks and executes the analysis pipeline as a smoke test,
+# then uploads the generated results as build artifacts.
+
+name: Forestrun CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "forestrun/**"
+      - ".github/workflows/forestrun-ci.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "forestrun/**"
+      - ".github/workflows/forestrun-ci.yml"
+  workflow_dispatch:
+
+jobs:
+  analysis-pipeline:
+    name: Lint & run analysis pipeline
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: forestrun
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pandas flake8
+
+      - name: Syntax check (compile all sources)
+        run: python -m compileall -q analyze.py fetch_data.py flask_demo
+
+      - name: Lint with flake8
+        run: flake8 analyze.py fetch_data.py flask_demo --max-line-length=100
+
+      - name: Run analysis pipeline (smoke test)
+        run: python analyze.py
+
+      - name: Upload results as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: forestrun-results
+          path: forestrun/results/
+          retention-days: 14

@@ -1,0 +1,61 @@
+# CI for the hands-on-1 Flask application.
+# Installs dependencies, verifies the app imports cleanly, then starts the
+# server and performs a smoke test against the index route.
+
+name: Flask App CI (hands-on-1)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "hands-on-1/**"
+      - ".github/workflows/flask-ci.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "hands-on-1/**"
+      - ".github/workflows/flask-ci.yml"
+  workflow_dispatch:
+
+jobs:
+  smoke-test:
+    name: Build & smoke test Flask app
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: hands-on-1
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Verify app imports cleanly
+        run: python -c "import app; print('Flask app OK:', app.app)"
+
+      - name: Start server & smoke test
+        run: |
+          python app.py &
+          SERVER_PID=$!
+          # Wait up to 30s for the server to come up
+          for i in $(seq 1 30); do
+            if curl -sf http://127.0.0.1:8000/ > /dev/null; then
+              echo "Server responded on port 8000"
+              kill $SERVER_PID
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "Server failed to start"
+          kill $SERVER_PID 2>/dev/null || true
+          exit 1
